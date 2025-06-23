@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>XCellera agent</title>
+</head>
+
+<body>
+    <title>XCellera agent</title>
+    <h1>Ask a Question</h1>
+    <form method="post">
+        <input type="text" name="query" placeholder="Enter your query" required style="width: 600px;">
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if response %}
+    <h2>Response</h2>
+    <p><strong>Query:</strong> {{ query }}</p>
+    <p><strong>Answer:</strong> {{ response }}</p>
+    <p><strong>Classification:</strong> {{ classification }}</p>
+    {% endif %}
+</body>
+
+</html>
