@@ -18,10 +18,22 @@ app = Flask(__name__)
 
 # Global variables (load once and reuse)
 query_engine = None
+# base_query_prompt = """
+# Context: You are an agent that supports in responding to RFP questions.
+# You work for Cover Genius, an Insurtech. The query below needs to be answered and it needs to get one of the 
+# following classifications: insurance, tech, general, legal, other. The goal is to answer the questions and inform the prospect of the
+# capabalities of Cover Genius and its products.
+# Make the information specific to the specified partner. 
+# If you find a lot of information please provide a long answer.
+# Response format: <classifcation>;<rfp response> 
+# Query:"""
+
 base_query_prompt = """
 Context: You are an agent that supports in responding to RFP questions.
 You work for Cover Genius, an Insurtech. The query below needs to be answered and it needs to get one of the 
-following classifications: Insurance, tech, general, legal, other
+following classifications: insurance, tech, general, legal, other. The goal is to answer the questions and inform the prospect of the
+capabalities of Cover Genius and its products.
+If you find a lot of information please provide a long answer.
 Response format: <classifcation>;<rfp response> 
 Query:"""
 
@@ -31,11 +43,14 @@ def initialize():
 
     # Initialize LLM + embedding model
     Settings.llm = Vertex(
-        model="gemini-2.5-flash", project=project_id, location=location_id
+        model="gemini-2.0-flash", project=project_id, location=location_id
     )
     Settings.embed_model = HuggingFaceEmbedding(
         model_name="BAAI/bge-small-en-v1.5"
     )
+
+    # Settings.chunk_size = 256
+    # Settings.chunk_overlap = 25
 
     # Load and index corpus
     corpus = SimpleDirectoryReader("./corpus/").load_data()
@@ -51,10 +66,13 @@ def index():
     print("flask started")
     response = None
     classification = None
+    partner = ""
     query = base_query_prompt
 
     if request.method == "POST":
         user_input = request.form.get("query")
+        partner = request.form.get("partner")
+        # full_query = query + " " + user_input + " partner: " + partner
         full_query = query + " " + user_input
         try:
             result = query_engine.query(full_query)
